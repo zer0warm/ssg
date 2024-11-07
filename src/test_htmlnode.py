@@ -27,7 +27,7 @@ class TestHTMLNode(unittest.TestCase):
 
     def test_repr(self):
         node = HTMLNode('a', props={'href': 'https://example.com'})
-        expected_repr = r'''HTMLNode(tag="a", value="None", children="None", props="{'href': 'https://example.com'}")'''
+        expected_repr = r'''HTMLNode(tag="a", value=None, children=[], props={'href': 'https://example.com'})'''
         self.assertEqual(repr(node), expected_repr)
 
     def test_raise_notimplementederror(self):
