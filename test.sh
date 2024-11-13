@@ -1,1 +1,3 @@
-python3 -m unittest discover -q -s src
+#! /bin/sh
+
+python3 -m unittest discover --verbose -s src
