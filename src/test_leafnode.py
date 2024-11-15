@@ -15,6 +15,26 @@ class TestLeafNode(unittest.TestCase):
         expected = '<a href="https://github.com">GitHub</a>'
         self.assertEqual(node.to_html(), expected)
 
+    def test_to_html_img(self):
+        node = LeafNode('img', value=None, props={
+            'src': 'https://example.com/image1.png',
+            'alt': 'An example of image',
+            'width': '700px',
+            'height': '200px'
+        })
+        expected = '<img src="https://example.com/image1.png" alt="An example of image" width="700px" height="200px">'
+        self.assertEqual(node.to_html(), expected)
+
+    def test_to_html_br(self):
+        node = LeafNode('br', value=None)
+        expected = '<br>'
+        self.assertEqual(node.to_html(), expected)
+
+    def test_to_html_hr(self):
+        node = LeafNode('hr', value=None)
+        expected = '<hr>'
+        self.assertEqual(node.to_html(), expected)
+
     def test_raise_valueerror(self):
         node = LeafNode('a', None, props={'href': 'https://github.com'})
         self.assertRaises(ValueError, node.to_html)
