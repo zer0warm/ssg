@@ -1,4 +1,5 @@
 from leafnode import LeafNode
+from textnode import TextNode, TextType
 
 def textnode_to_htmlnode(text_node):
     typ = text_node.text_type
@@ -18,3 +19,23 @@ def textnode_to_htmlnode(text_node):
                         props={'src': text_node.url,
                                'alt': text_node.text})
     raise ValueError(f'invalid text type {typ}')
+
+def split_nodes_delimiter(nodes, delimiter, text_type):
+    splitted = []
+    for node in nodes:
+        if node.text_type != 'normal':
+            splitted.append(node)
+            continue
+        if node.text.count(delimiter) % 2 == 1:
+            raise Exception(f'invalid: unclosed {delimiter} detected')
+        if delimiter not in node.text:
+            splitted.append(node)
+        else:
+            for part in node.text.split(delimiter):
+                if part == '':
+                    continue
+                elif part.startswith(' ') or part.endswith(' '):
+                    splitted.append(TextNode(part, TextType.NORMAL))
+                else:
+                    splitted.append(TextNode(part, text_type))
+    return splitted

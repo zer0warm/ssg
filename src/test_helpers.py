@@ -2,7 +2,7 @@ import unittest
 
 from leafnode import LeafNode
 from textnode import TextNode, TextType
-from helpers import textnode_to_htmlnode as t2h
+from helpers import textnode_to_htmlnode as t2h, split_nodes_delimiter as sn_delim
 
 class TestTextNodeToHTMLNode(unittest.TestCase):
     def test_convert_normal_text(self):
@@ -64,6 +64,75 @@ class TestTextNodeToHTMLNode(unittest.TestCase):
     def test_convert_malfunc_text(self):
         tn = TextNode('Invalid node', 'invalid', 'url://point.to.nowhere')
         self.assertRaisesRegex(ValueError, 'invalid text type "invalid"', t2h, tn)
+
+class TestSplitNodesDelimiter(unittest.TestCase):
+    def test_split_bold(self):
+        nodes = [TextNode('Bold of **text** to assume success', TextType.NORMAL)]
+        splitted = sn_delim(nodes, '**', TextType.BOLD)
+        expect = [
+            TextNode('Bold of ', TextType.NORMAL),
+            TextNode('text', TextType.BOLD),
+            TextNode(' to assume success', TextType.NORMAL)
+        ]
+        self.assertEqual(splitted, expect)
+
+    def test_split_bold_start(self):
+        nodes = [TextNode('**Bold** of text to assume success', TextType.NORMAL)]
+        splitted = sn_delim(nodes, '**', TextType.BOLD)
+        expect = [
+            TextNode('Bold', TextType.BOLD),
+            TextNode(' of text to assume success', TextType.NORMAL)
+        ]
+        self.assertEqual(splitted, expect)
+
+    def test_split_bold_end(self):
+        nodes = [TextNode('Bold of text to assume **success**', TextType.NORMAL)]
+        splitted = sn_delim(nodes, '**', TextType.BOLD)
+        expect = [
+            TextNode('Bold of text to assume ', TextType.NORMAL),
+            TextNode('success', TextType.BOLD)
+        ]
+        self.assertEqual(splitted, expect)
+
+    def test_split_bold_multi(self):
+        nodes = [
+            TextNode('**Bold** of `text` to *assume success*',
+                     TextType.NORMAL),
+            TextNode('Bold in Markdown is just <strong>', TextType.NORMAL),
+            TextNode('Bold text is <strong>', TextType.BOLD)
+        ]
+        splitted = sn_delim(nodes, '**', TextType.BOLD)
+        expect = [
+            TextNode('Bold', TextType.BOLD),
+            TextNode(' of `text` to *assume success*', TextType.NORMAL),
+            TextNode('Bold in Markdown is just <strong>', TextType.NORMAL),
+            TextNode('Bold text is <strong>', TextType.BOLD)
+        ]
+        self.assertEqual(splitted, expect)
+
+    def test_split_bold_uneven(self):
+        nodes = [TextNode('Bold of **text to assume success', TextType.NORMAL)]
+        self.assertRaisesRegex(Exception, 'invalid',
+                               sn_delim, nodes, '**', TextType.BOLD)
+
+    def test_split_italic_multi(self):
+        nodes = [
+            TextNode('Have *a Pisa* in `Italic`? You meant `Bold`?',
+                     TextType.NORMAL),
+            TextNode('should not convert this part', TextType.NORMAL),
+            TextNode('should still be bold', TextType.BOLD),
+            TextNode('Italic', TextType.CODE)
+        ]
+        splitted = sn_delim(nodes, '*', TextType.ITALIC)
+        expect = [
+            TextNode('Have ', TextType.NORMAL),
+            TextNode('a Pisa', TextType.ITALIC),
+            TextNode(' in `Italic`? You meant `Bold`?', TextType.NORMAL),
+            TextNode('should not convert this part', TextType.NORMAL),
+            TextNode('should still be bold', TextType.BOLD),
+            TextNode('Italic', TextType.CODE)
+        ]
+        self.assertEqual(splitted, expect)
 
 if __name__ == '__main__':
     unittest.main()
