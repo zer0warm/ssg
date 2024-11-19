@@ -2,7 +2,10 @@ import unittest
 
 from leafnode import LeafNode
 from textnode import TextNode, TextType
-from helpers import textnode_to_htmlnode as t2h, split_nodes_delimiter as sn_delim
+from helpers import\
+    textnode_to_htmlnode as t2h,\
+    split_nodes_delimiter as sn_delim,\
+    extract_markdown_links, extract_markdown_images
 
 class TestTextNodeToHTMLNode(unittest.TestCase):
     def test_convert_normal_text(self):
@@ -133,6 +136,56 @@ class TestSplitNodesDelimiter(unittest.TestCase):
             TextNode('Italic', TextType.CODE)
         ]
         self.assertEqual(splitted, expect)
+
+class TestExtractMarkdownLink(unittest.TestCase):
+    def test_extract_links_single(self):
+        text = 'Visit [GitHub](https://github.com).'
+        links = extract_markdown_links(text)
+        expect = [("GitHub", "https://github.com")]
+        self.assertEqual(links, expect)
+
+    def test_extract_links_multiple(self):
+        text = '''Platforms hosting Git repositories including
+        [GitHub](https://github.com) and [GitLab](https://gitlab.com)'''
+        links = extract_markdown_links(text)
+        expect = [
+            ("GitHub", "https://github.com"),
+            ("GitLab", "https://gitlab.com")
+        ]
+        self.assertEqual(links, expect)
+
+    def test_extract_links_in_junction(self):
+        text = '''This is a [line] with a lot of (fix: many) <brackets>. The
+        point is to [test](https://linux.die.net/man/1/test) whether the system
+        can <<extract>> properly.'''
+        expect = [("test", "https://linux.die.net/man/1/test")]
+        links = extract_markdown_links(text)
+        self.assertEqual(links, expect)
+
+    def test_extract_links_among_images(self):
+        text = '''[A link](https://example.com) vs. ![An image](https://image.example.com)'''
+        expect = [("A link", "https://example.com")]
+        links = extract_markdown_links(text)
+        self.assertEqual(links, expect)
+
+    def test_extract_links_empty(self):
+        text = 'This is a valid markdown. []() is an empty link'
+        expect = [("", "")]
+        links = extract_markdown_links(text)
+        self.assertEqual(links, expect)
+
+class TestExtractMarkdownImage(unittest.TestCase):
+    def test_extract_image(self):
+        text = 'Check out: ![an example image](https://example.com/img)'
+        imgs = extract_markdown_images(text)
+        expect = [("an example image", "https://example.com/img")]
+        self.assertEqual(imgs, expect)
+
+    def test_extract_image_with_links(self):
+        text = '''[A link](https://example.com) vs. ![An image](https://image.example.com)'''
+        expect = [("An image", "https://image.example.com")]
+        imgs = extract_markdown_images(text)
+        self.assertEqual(imgs, expect)
 
 if __name__ == '__main__':
     unittest.main()
