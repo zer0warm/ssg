@@ -6,7 +6,7 @@ from helpers import\
     textnode_to_htmlnode,\
     split_nodes_delimiter,\
     extract_markdown_links, extract_markdown_images,\
-    split_nodes_image
+    split_nodes_image, split_nodes_link
 
 class TestTextNodeToHTMLNode(unittest.TestCase):
     def test_convert_normal_text(self):
@@ -257,6 +257,93 @@ class TestSplitNodesImage(unittest.TestCase):
         ]
         self.maxDiff = None
         self.assertEqual(split_nodes_image(nodes), expect)
+
+class TestSplitNodesLink(unittest.TestCase):
+    def test_split_link_single(self):
+        nodes = [TextNode('[link name](http://link.url)', TextType.NORMAL)]
+        expect = [
+            TextNode('link name', TextType.LINK, 'http://link.url')
+        ]
+        self.assertEqual(split_nodes_link(nodes), expect)
+
+    def test_split_link_multiple_text_single(self):
+        nodes = [
+            TextNode('[link 1](https://1.link.url) and ' +
+                     '[link 2](https://2.link.url). ' +
+                     '[link 3](https://3.link.url)', TextType.NORMAL)
+        ]
+        expect = [
+            TextNode('link 1', TextType.LINK, 'https://1.link.url'),
+            TextNode(' and ', TextType.NORMAL),
+            TextNode('link 2', TextType.LINK, 'https://2.link.url'),
+            TextNode('. ', TextType.NORMAL),
+            TextNode('link 3', TextType.LINK, 'https://3.link.url'),
+        ]
+        self.assertEqual(split_nodes_link(nodes), expect)
+
+    def test_split_link_multiple_text_multiple(self):
+        nodes = [
+            TextNode('First, a single line.', TextType.NORMAL),
+            TextNode('Then a link [example](https://example.com)', TextType.NORMAL),
+            TextNode('This sentence is in bold', TextType.BOLD),
+            TextNode('I heard you like [skribbl](https://skribbl.io)?', TextType.NORMAL),
+            TextNode('Bootdotdev', TextType.LINK, 'https://linkedin.com/bootdotdev'),
+            TextNode('Finally, a dot.', TextType.NORMAL)
+        ]
+        expect = [
+            TextNode('First, a single line.', TextType.NORMAL),
+            TextNode('Then a link ', TextType.NORMAL),
+            TextNode('example', TextType.LINK, 'https://example.com'),
+            TextNode('This sentence is in bold', TextType.BOLD),
+            TextNode('I heard you like ', TextType.NORMAL),
+            TextNode('skribbl', TextType.LINK, 'https://skribbl.io'),
+            TextNode('?', TextType.NORMAL),
+            TextNode('Bootdotdev', TextType.LINK, 'https://linkedin.com/bootdotdev'),
+            TextNode('Finally, a dot.', TextType.NORMAL)
+        ]
+        self.assertEqual(split_nodes_link(nodes), expect)
+
+    def test_split_link_empty(self):
+        nodes = [
+            TextNode('[]()', TextType.NORMAL),
+            TextNode('[without link]()', TextType.NORMAL),
+            TextNode('[](without name)', TextType.NORMAL)
+        ]
+        expect = [
+            TextNode('', TextType.LINK, ''),
+            TextNode('without link', TextType.LINK, ''),
+            TextNode('', TextType.LINK, 'without name')
+        ]
+        self.assertEqual(split_nodes_link(nodes), expect)
+
+    def test_split_link_no_link(self):
+        nodes = [
+            TextNode('A line of normal text', TextType.NORMAL),
+            TextNode('A line of **bold** text', TextType.NORMAL),
+            TextNode('Link', TextType.LINK, 'https://example.com'),
+            TextNode('bash', TextType.CODE)
+        ]
+        expect = nodes.copy()
+        self.assertEqual(split_nodes_link(nodes), expect)
+
+    def test_split_link_among_images(self):
+        nodes = [
+            TextNode('[Hello](mailto:hello@boot.dev), you\'ve stumbled' +
+                     ' upon ![pokemon image](http://po.ke.mon)' +
+                     ' and witness ![orange cat](http://random.cat).' +
+                     ' Remember to feed back in our' +
+                     ' [repo](github.com/zer0warm/jibberish)',
+                     TextType.NORMAL)
+        ]
+        expect = [
+            TextNode('Hello', TextType.LINK, 'mailto:hello@boot.dev'),
+            TextNode(', you\'ve stumbled upon' +
+                     ' ![pokemon image](http://po.ke.mon) and witness' +
+                     ' ![orange cat](http://random.cat). Remember to' +
+                     ' feed back in our ', TextType.NORMAL),
+            TextNode('repo', TextType.LINK, 'github.com/zer0warm/jibberish')
+        ]
+        self.assertEqual(split_nodes_link(nodes), expect)
 
 if __name__ == '__main__':
     unittest.main()

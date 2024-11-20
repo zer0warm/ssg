@@ -67,3 +67,19 @@ def split_nodes_image(nodes):
                 alt, src = images.pop(0)
                 splitted.append(TextNode(alt, TextType.IMAGE, src))
     return splitted
+
+def split_nodes_link(nodes):
+    splitted = []
+    for node in nodes:
+        if node.text_type != 'normal':
+            splitted.append(node)
+            continue
+        regex = r'(?<!!)\[[^]]*?\]\([^)]*?\)'
+        links = extract_markdown_links(node.text)
+        for part in re.split(regex, node.text):
+            if part != '':
+                splitted.append(TextNode(part, TextType.NORMAL))
+            if links:
+                value, href = links.pop(0)
+                splitted.append(TextNode(value, TextType.LINK, href))
+    return splitted
