@@ -5,7 +5,8 @@ from textnode import TextNode, TextType
 from helpers import\
     textnode_to_htmlnode as t2h,\
     split_nodes_delimiter as sn_delim,\
-    extract_markdown_links, extract_markdown_images
+    extract_markdown_links, extract_markdown_images,\
+    split_nodes_image
 
 class TestTextNodeToHTMLNode(unittest.TestCase):
     def test_convert_normal_text(self):
@@ -186,6 +187,75 @@ class TestExtractMarkdownImage(unittest.TestCase):
         expect = [("An image", "https://image.example.com")]
         imgs = extract_markdown_images(text)
         self.assertEqual(imgs, expect)
+
+class TestSplitNodesImage(unittest.TestCase):
+    def test_split_image_end(self):
+        nodes = [TextNode('An image ![example img](https://image.example.com)', TextType.NORMAL)]
+        expect = [
+            TextNode('An image ', TextType.NORMAL),
+            TextNode('example img', TextType.IMAGE, 'https://image.example.com')
+        ]
+        self.assertEqual(split_nodes_image(nodes), expect)
+
+    def test_split_image_start(self):
+        nodes = [TextNode('![example img](https://image.example.com) as an example', TextType.NORMAL)]
+        expect = [
+            TextNode('example img', TextType.IMAGE, 'https://image.example.com'),
+            TextNode(' as an example', TextType.NORMAL)
+        ]
+        self.assertEqual(split_nodes_image(nodes), expect)
+
+    def test_split_image_standalone(self):
+        nodes = [TextNode('![example img](https://image.example.com)', TextType.NORMAL)]
+        expect = [
+            TextNode('example img', TextType.IMAGE, 'https://image.example.com')
+        ]
+        self.assertEqual(split_nodes_image(nodes), expect)
+
+    def test_split_image_no_image(self):
+        nodes = [
+            TextNode('A line of normal text', TextType.NORMAL),
+            TextNode('A line of **bold** text', TextType.NORMAL),
+            TextNode('Link', TextType.LINK, 'https://example.com'),
+            TextNode('bash', TextType.CODE)
+        ]
+        expect = nodes.copy()
+        self.assertEqual(split_nodes_image(nodes), expect)
+
+    def test_split_image_multiple(self):
+        nodes = [
+            TextNode('Here is an image of a cat', TextType.NORMAL),
+            TextNode('![orange cat](https://orange-cat.example.com)', TextType.NORMAL),
+            TextNode('Here is mine ![black cat](https://bc.example.com)', TextType.NORMAL)
+        ]
+        expect = [
+            TextNode('Here is an image of a cat', TextType.NORMAL),
+            TextNode('orange cat', TextType.IMAGE, 'https://orange-cat.example.com'),
+            TextNode('Here is mine ', TextType.NORMAL),
+            TextNode('black cat', TextType.IMAGE, 'https://bc.example.com')
+        ]
+        self.assertEqual(split_nodes_image(nodes), expect)
+
+    def test_split_image_among_links(self):
+        nodes = [
+            TextNode('![image one](https://i1.example.com) and' +
+                     ' [GitHub](https://github.com).' +
+                     ' ![image two](https://i2.example.com),' +
+                     ' ![image three](https://i3.example.com).' +
+                     ' [Sourcehut](https://sourcehut.org) is preferred.' +
+                     ' ![image four](https://i4.example.com)', TextType.NORMAL)
+        ]
+        expect = [
+            TextNode('image one', TextType.IMAGE, 'https://i1.example.com'),
+            TextNode(' and [GitHub](https://github.com). ', TextType.NORMAL),
+            TextNode('image two', TextType.IMAGE, 'https://i2.example.com'),
+            TextNode(', ', TextType.NORMAL),
+            TextNode('image three', TextType.IMAGE, 'https://i3.example.com'),
+            TextNode('. [Sourcehut](https://sourcehut.org) is preferred. ', TextType.NORMAL),
+            TextNode('image four', TextType.IMAGE, 'https://i4.example.com')
+        ]
+        self.maxDiff = None
+        self.assertEqual(split_nodes_image(nodes), expect)
 
 if __name__ == '__main__':
     unittest.main()

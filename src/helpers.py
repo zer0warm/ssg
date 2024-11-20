@@ -51,3 +51,19 @@ def extract_markdown_images(text):
     regex = r'!\[([^]]*?)\]\(([^)]*?)\)'
     images = re.findall(regex, text)
     return images
+
+def split_nodes_image(nodes):
+    splitted = []
+    for node in nodes:
+        if node.text_type != 'normal':
+            splitted.append(node)
+            continue
+        regex = r'!\[[^]]*?\]\([^)]*?\)'
+        images = extract_markdown_images(node.text)
+        for part in re.split(regex, node.text):
+            if part != '':
+                splitted.append(TextNode(part, TextType.NORMAL))
+            if images:
+                alt, src = images.pop(0)
+                splitted.append(TextNode(alt, TextType.IMAGE, src))
+    return splitted
