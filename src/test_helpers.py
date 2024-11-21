@@ -5,7 +5,8 @@ from textnode import TextNode, TextType
 from helpers import (
     split_nodes_delimiter,
     extract_markdown_links, extract_markdown_images,
-    split_nodes_image, split_nodes_link
+    split_nodes_image, split_nodes_link,
+    block_to_block_type
 )
 
 class TestSplitNodesDelimiter(unittest.TestCase):
@@ -282,6 +283,181 @@ class TestSplitNodesLink(unittest.TestCase):
             TextNode('repo', TextType.LINK, 'github.com/zer0warm/jibberish')
         ]
         self.assertEqual(split_nodes_link(nodes), expect)
+
+class TestBlockToBlockType(unittest.TestCase):
+    def test_block_type_p(self):
+        block = 'This is a paragraph. Watch out for **bold** or *italic* text. Inline `code` too.'
+        self.assertEqual(block_to_block_type(block), 'paragraph')
+
+    def test_block_type_p_invalid_heading(self):
+        blocks = [
+            '#This is not a heading',
+            '################ too many octothorpes',
+            '####### This is not a heading',
+            '= Heading, but in AsciiDoc',
+            '''Same but in RST
+===============''',
+            '''# Supposed heading
+But followed by a line.'''
+        ]
+        for block in blocks:
+            self.assertEqual(block_to_block_type(block), 'paragraph')
+
+    def test_block_type_p_invalid_code(self):
+        blocks = [
+            """```Code in here
+ThenCode
+ButNoClosing""",
+            """```
+Usual code
+But no closing, either
+""",
+            """Normal text runs
+Then suddenly a code block
+```bash
+:(){:|:&}:
+```""",
+            """Over-deleting the start
+of a code block
+```"""
+        ]
+        for block in blocks:
+            self.assertEqual(block_to_block_type(block), 'paragraph')
+
+    def test_block_type_p_invalid_quote(self):
+        blocks = [
+            '''>In a quote
+>Like this
+But suddenly not quote''',
+            '''Not having blank line between this paragraph
+>And the quote
+>Like this''',
+            '''* List then
+* List next
+> Then quote
+> Like this'''
+        ]
+        for block in blocks:
+            self.assertEqual(block_to_block_type(block), 'paragraph')
+
+    def test_block_type_p_invalid_unordered_list(self):
+        blocks = [
+            '-list item without space',
+            '*list item without space',
+
+'''- List item 1
+- List item 2
+No longer list item
+With these two''',
+
+'''en passant
+- List item 1
+- List item 2''',
+
+'''- List item 1
+en passant
+- List item 2''',
+
+'''- Mix list item marker
+* With asterisk
+- Then back to this one''',
+
+'''* List item
+en passant
+* Another list item''',
+
+"""en passant
+* List item 1
+* List item 2""",
+
+"""- Dash list item 1
+- Dash list item 2
+en passant"""
+        ]
+        for block in blocks:
+            self.assertEqual(block_to_block_type(block), 'paragraph')
+
+    def test_block_type_p_invalid_ordered_list(self):
+        blocks = [
+            '2. Why start with 1?',
+            '0. Again, are we not computer scientists?',
+
+"""2. Apple
+3. Orange""",
+
+"""1. Fruit
+2. Sushi
+en passant
+3. Alexander""",
+
+"""1. Order #4096
+2. Order #16384
+en passant""",
+        ]
+        for block in blocks:
+            self.assertEqual(block_to_block_type(block), 'paragraph')
+
+    def test_block_type_heading(self):
+        blocks = [
+            '# This is a heading',
+            '##     This is h2',
+            '###   This is h3',
+            '#### This is h4',
+            '##### This is h5',
+            '###### This is h6',
+        ]
+        for block in blocks:
+            self.assertEqual(block_to_block_type(block), 'heading')
+
+    def test_block_type_code(self):
+        blocks = [
+            """```
+This is just a block of code font.
+With no actual code.
+```""",
+            """```py
+# python code is only special when there's js
+print('Hello, world')
+```""",
+        ]
+        for block in blocks:
+            self.assertEqual(block_to_block_type(block), 'code')
+
+    def test_block_type_quote(self):
+        blocks = [
+            '> Single line quote',
+            '>Single line quote without space',
+            '''> Double line
+> Quote''',
+            '''> If it's on the Internet
+>It must be true.
+>Especially when cited to Albert Einstein.'''
+        ]
+        for block in blocks:
+            self.assertEqual(block_to_block_type(block), 'quote')
+
+    def test_block_type_unordered_list(self):
+        blocks = [
+            '* List item asterisk',
+            '- List item dash',
+            '''* List item asterisk 1
+* List item asterisk 2
+* List item asterisk 3''',
+            '''- List item dash 1
+- List item dash 2'''
+        ]
+        for block in blocks:
+            self.assertEqual(block_to_block_type(block), 'unordered_list')
+
+    def test_block_type_ordered_list(self):
+        blocks = [
+            '1. List item single',
+            '''1. List item 1
+2. List item 2
+3. List item 3'''
+        ]
+        for block in blocks:
+            self.assertEqual(block_to_block_type(block), 'ordered_list')
 
 if __name__ == '__main__':
     unittest.main()

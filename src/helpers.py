@@ -74,3 +74,22 @@ def split_nodes_link(nodes):
                 value, href = links.pop(0)
                 splitted.append(TextNode(value, TextType.LINK, href))
     return splitted
+
+def block_to_block_type(block):
+    lines = block.split('\n')
+    if len(lines) == 1 and re.match(r'#{1,6} ', lines[0]):
+        return 'heading'
+    if (all(map(lambda L: L.startswith('- '), lines)) or
+        all(map(lambda L: L.startswith('* '), lines))):
+        return 'unordered_list'
+    if all(map(lambda L: L.startswith('>'), lines)):
+        return 'quote'
+    if len(lines) >= 2 and (lines[0].startswith('```') and
+                            lines[-1] == '```'):
+        return 'code'
+    numbers = list(map(lambda L: re.match(r'(\d+)\.', L), lines))
+    if all(numbers):
+        orders = list(map(lambda m: int(m.groups()[0]), numbers))
+        if orders == list(range(1, int(orders[-1])+1)):
+            return 'ordered_list'
+    return 'paragraph'
