@@ -2,12 +2,14 @@ import unittest
 
 from leafnode import LeafNode
 from textnode import TextNode, TextType
-from helpers import\
-    textnode_to_htmlnode,\
-    split_nodes_delimiter,\
-    extract_markdown_links, extract_markdown_images,\
-    split_nodes_image, split_nodes_link,\
-    text_to_textnodes
+from helpers import (
+    textnode_to_htmlnode,
+    split_nodes_delimiter,
+    extract_markdown_links, extract_markdown_images,
+    split_nodes_image, split_nodes_link,
+    text_to_textnodes,
+    markdown_to_blocks
+)
 
 class TestTextNodeToHTMLNode(unittest.TestCase):
     def test_convert_normal_text(self):
@@ -397,6 +399,93 @@ class TestTextToTextNodes(unittest.TestCase):
             TextNode(' is the simplest way for most people. Just run this in your terminal:', TextType.NORMAL)
         ]
         self.assertEqual(text_to_textnodes(text), expect)
+
+class TestMarkdownToBlocks(unittest.TestCase):
+    def test_markdown_to_block_empty(self):
+        markdown = ''
+        expect = []
+        self.assertEqual(markdown_to_blocks(markdown), expect)
+
+    def test_markdown_to_block_simple(self):
+        markdown = '''# This is a heading
+
+This is a paragraph of text. It has some **bold** and *italic* words inside of it.
+
+* This is the first list item in a list block
+* This is a list item
+* This is another list item
+'''
+        expect = [
+            '# This is a heading',
+            'This is a paragraph of text. It has some **bold** and *italic* words inside of it.',
+            '''* This is the first list item in a list block
+* This is a list item
+* This is another list item'''
+        ]
+        #print(markdown_to_blocks(markdown))
+        self.assertEqual(markdown_to_blocks(markdown), expect)
+
+    def test_markdown_to_block_multiple_blank_lines(self):
+        markdown = '''
+
+# This is a heading
+
+
+
+This is a paragraph of text. It has some **bold** and *italic* words inside of it.
+
+
+
+* This is the first list item in a list block
+* This is a list item
+* This is another list item
+
+
+'''
+        expect = [
+            '# This is a heading',
+            'This is a paragraph of text. It has some **bold** and *italic* words inside of it.',
+            '''* This is the first list item in a list block
+* This is a list item
+* This is another list item'''
+        ]
+        self.assertEqual(markdown_to_blocks(markdown), expect)
+
+    def test_markdown_to_block_leading_spaces(self):
+        markdown = '''# This is a heading
+
+        This is a paragraph of text. It has some **bold** and *italic* words inside of it.
+
+        * This is the first list item in a list block
+        * This is a list item
+        * This is another list item
+        '''
+        expect = [
+            '# This is a heading',
+            'This is a paragraph of text. It has some **bold** and *italic* words inside of it.',
+            '''* This is the first list item in a list block
+* This is a list item
+* This is another list item'''
+        ]
+        self.assertEqual(markdown_to_blocks(markdown), expect)
+
+    def test_markdown_to_block_trailing_spaces(self):
+        markdown = '''# This is a heading
+         
+This is a paragraph of text. It has some **bold** and *italic* words inside of it.       
+  
+* This is the first list item in a list block          
+* This is a list item  
+* This is another list item   
+        '''
+        expect = [
+            '# This is a heading',
+            'This is a paragraph of text. It has some **bold** and *italic* words inside of it.',
+            '''* This is the first list item in a list block
+* This is a list item
+* This is another list item'''
+        ]
+        self.assertEqual(markdown_to_blocks(markdown), expect)
 
 if __name__ == '__main__':
     unittest.main()

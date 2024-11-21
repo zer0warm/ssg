@@ -103,3 +103,28 @@ def text_to_textnodes(text):
                                           '**', TextType.BOLD),
                     '*', TextType.ITALIC),
                 '`', TextType.CODE)))
+
+def markdown_to_blocks(markdown):
+    blocks = []
+    lines = markdown.split('\n')
+    # strip leading and trailing spaces of lines
+    lines = list(map(str.strip, lines))
+    is_new_block = False
+    current_block = ''
+    for line in lines:
+        if line:
+            if is_new_block:
+                if current_block:
+                    blocks.append(current_block)
+                is_new_block = False
+                current_block = ''
+            if current_block:
+                current_block = '\n'.join([current_block, line])
+            else:
+                current_block = line
+        else:
+            is_new_block = True
+    else:
+        if current_block:
+            blocks.append(current_block)
+    return blocks
