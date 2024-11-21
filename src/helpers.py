@@ -28,18 +28,28 @@ def split_nodes_delimiter(nodes, delimiter, text_type):
         if node.text_type != 'normal':
             splitted.append(node)
             continue
-        if node.text.count(delimiter) % 2 == 1:
-            raise Exception(f'invalid: unclosed {delimiter} detected')
-        if delimiter not in node.text:
-            splitted.append(node)
-        else:
-            for part in node.text.split(delimiter):
-                if part == '':
-                    continue
-                elif part.startswith(' ') or part.endswith(' '):
-                    splitted.append(TextNode(part, TextType.NORMAL))
+        text = node.text
+        old_delim = ''
+        while True:
+            left, delim, right = text.partition(delimiter)
+            if delim == '' and right == '':
+                if left:
+                    splitted.append(TextNode(left, TextType.NORMAL))
+                break
+            if left:
+                if not right:
+                    splitted.append(TextNode(left, text_type))
+                elif old_delim == '' and (delimiter not in right):
+                    raise Exception(f'invalid: unclosed {delimiter} detected')
+                elif old_delim:
+                    old_delim = ''
+                    splitted.append(TextNode(left, text_type))
                 else:
-                    splitted.append(TextNode(part, text_type))
+                    old_delim = delim
+                    splitted.append(TextNode(left, TextType.NORMAL))
+            else:
+                old_delim = delim
+            text = right
     return splitted
 
 def extract_markdown_links(text):
