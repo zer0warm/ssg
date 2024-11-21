@@ -6,7 +6,8 @@ from helpers import\
     textnode_to_htmlnode,\
     split_nodes_delimiter,\
     extract_markdown_links, extract_markdown_images,\
-    split_nodes_image, split_nodes_link
+    split_nodes_image, split_nodes_link,\
+    text_to_textnodes
 
 class TestTextNodeToHTMLNode(unittest.TestCase):
     def test_convert_normal_text(self):
@@ -344,6 +345,58 @@ class TestSplitNodesLink(unittest.TestCase):
             TextNode('repo', TextType.LINK, 'github.com/zer0warm/jibberish')
         ]
         self.assertEqual(split_nodes_link(nodes), expect)
+
+class TestTextToTextNodes(unittest.TestCase):
+    def test_text_to_nodes_only_non_links(self):
+        text = 'Run `bash` and *tell* me **what you see**'
+        expect = [
+            TextNode('Run ', TextType.NORMAL),
+            TextNode('bash', TextType.CODE),
+            TextNode(' and ', TextType.NORMAL),
+            TextNode('tell', TextType.ITALIC),
+            TextNode(' me ', TextType.NORMAL),
+            TextNode('what you see', TextType.BOLD)
+        ]
+        self.assertEqual(text_to_textnodes(text), expect)
+
+    def test_text_to_nodes_only_links(self):
+        text = ('Come see this ![picture](https://image.example.com)' +
+                ' and remember to follow [me](https://me.bsky.app)')
+        expect = [
+            TextNode('Come see this ', TextType.NORMAL),
+            TextNode('picture', TextType.IMAGE, 'https://image.example.com'),
+            TextNode(' and remember to follow ', TextType.NORMAL),
+            TextNode('me', TextType.LINK, 'https://me.bsky.app')
+        ]
+        self.assertEqual(text_to_textnodes(text), expect)
+
+    def test_text_to_nodes_mix(self):
+        text = '''A [link](https://example.com) shows an image: ![alt text](https://image.example.com). Run [this code](https://notepad.app/sh) with `bash` or `zsh`: `echo "Hello World" > ~/.hello`'''
+        expect = [
+            TextNode('A ', TextType.NORMAL),
+            TextNode('link', TextType.LINK, 'https://example.com'),
+            TextNode(' shows an image: ', TextType.NORMAL),
+            TextNode('alt text', TextType.IMAGE, 'https://image.example.com'),
+            TextNode('. Run ', TextType.NORMAL),
+            TextNode('this code', TextType.LINK, 'https://notepad.app/sh'),
+            TextNode(' with ', TextType.NORMAL),
+            TextNode('bash', TextType.CODE),
+            TextNode(' or ', TextType.NORMAL),
+            TextNode('zsh', TextType.CODE),
+            TextNode(': ', TextType.NORMAL),
+            TextNode('echo "Hello World" > ~/.hello', TextType.CODE)
+        ]
+        self.assertEqual(text_to_textnodes(text), expect)
+
+    def test_text_to_nodes_random_1(self):
+        text = '**Option 1**: [The webi installer](https://webinstall.dev/golang/) is the simplest way for most people. Just run this in your terminal:'
+        expect = [
+            TextNode('Option 1', TextType.BOLD),
+            TextNode(': ', TextType.NORMAL),
+            TextNode('The webi installer', TextType.LINK, 'https://webinstall.dev/golang/'),
+            TextNode(' is the simplest way for most people. Just run this in your terminal:', TextType.NORMAL)
+        ]
+        self.assertEqual(text_to_textnodes(text), expect)
 
 if __name__ == '__main__':
     unittest.main()
