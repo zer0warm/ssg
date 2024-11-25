@@ -77,7 +77,7 @@ def markdown_to_htmlnode(markdown):
         typ = block_to_block_type(block)
         transformer = block_type_transformers[typ]
         children.append(transformer(block))
-    return ParentNode('body', children)
+    return ParentNode('div', children)
 
 def text_to_children(text):
     textnodes = text_to_textnodes(text.lstrip())

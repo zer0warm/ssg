@@ -222,7 +222,7 @@ A single newline should not break it.
 * This is a list item
 * This is another list item
 '''
-        expect = ParentNode('body', [
+        expect = ParentNode('div', [
             ParentNode('h1', [
                 LeafNode(None, 'This is a heading'),
             ]),
@@ -255,7 +255,7 @@ A single newline should not break it."""),
 1. Prism
 2. K-supermarket
         '''
-        expect = ParentNode('body', [
+        expect = ParentNode('div', [
             ParentNode('h2', [
                 LeafNode(None, 'Shopping list'),
             ]),
@@ -297,7 +297,7 @@ Just some line that is space-preserved
 Make it a curve
 ```
         '''
-        expect = ParentNode('body', [
+        expect = ParentNode('div', [
             ParentNode('pre', [
                 ParentNode('code', [
                     LeafNode(None, '[[ $INSANE ]] && true || false'),
@@ -335,7 +335,7 @@ Make it a curve'''),
 >> More than a level
 > Should be normal
 '''
-        expect = ParentNode('body', [
+        expect = ParentNode('div', [
             ParentNode('blockquote', [
                 ParentNode('p', [
                     LeafNode(None, '''A wall of quote
@@ -367,7 +367,7 @@ en passant
 - Because a line ran over
 
         '''
-        expect = ParentNode('body', [
+        expect = ParentNode('div', [
             ParentNode('p', [
                 LeafNode(None, """# No longer a heading
 Because there's a line under it."""),
@@ -388,7 +388,7 @@ en passant
 
 ###### level 6
         '''
-        expect = ParentNode('body', [
+        expect = ParentNode('div', [
             ParentNode('h1', [LeafNode(None, 'Should still be h1')]),
             ParentNode('h2', [LeafNode(None, 'level 2')]),
             ParentNode('h6', [LeafNode(None, 'level 6')]),
@@ -409,7 +409,7 @@ en passant
 - List item 2
 - List item 3
         '''
-        expect = ParentNode('body', [
+        expect = ParentNode('div', [
             ParentNode('ul', [
                 ParentNode('li', [LeafNode(None, 'Single list item')]),
             ]),
