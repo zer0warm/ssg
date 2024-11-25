@@ -1,10 +1,13 @@
 import unittest
 
 from textnode import TextNode, TextType
+from leafnode import LeafNode
+from parentnode import ParentNode
 from transformers import (
     textnode_to_htmlnode,
     text_to_textnodes,
-    markdown_to_blocks
+    markdown_to_blocks,
+    markdown_to_htmlnode
 )
 
 class TestTextNodeToHTMLNode(unittest.TestCase):
@@ -207,3 +210,220 @@ This is a paragraph of text. It has some **bold** and *italic* words inside of i
 * This is another list item'''
         ]
         self.assertEqual(markdown_to_blocks(markdown), expect)
+
+class TestMarkdownToHTMLNode(unittest.TestCase):
+    def test_markdown_to_htmlnode_simple(self):
+        markdown = '''# This is a heading
+
+This is a paragraph of text. It has some **bold** and *italic* words inside of it.
+A single newline should not break it.
+
+* This is the first list item in a list block
+* This is a list item
+* This is another list item
+'''
+        expect = ParentNode('body', [
+            ParentNode('h1', [
+                LeafNode(None, 'This is a heading'),
+            ]),
+            ParentNode('p', [
+                LeafNode(None, "This is a paragraph of text. It has some "),
+                LeafNode('b', "bold"),
+                LeafNode(None, " and "),
+                LeafNode('i', "italic"),
+                LeafNode(None, """ words inside of it.
+A single newline should not break it."""),
+            ]),
+            ParentNode('ul', [
+                ParentNode('li', [LeafNode(None, 'This is the first list item in a list block')]),
+                ParentNode('li', [LeafNode(None, 'This is a list item')]),
+                ParentNode('li', [LeafNode(None, 'This is another list item')]),
+            ]),
+        ])
+        self.assertEqual(repr(markdown_to_htmlnode(markdown)), repr(expect))
+
+    def test_markdown_to_htmlnode_ordered_list(self):
+        markdown = '''## Shopping list
+
+1. Eggs
+2. Cabbages
+3. **Milk**
+4. Whisky
+
+## Shopping sites
+
+1. Prism
+2. K-supermarket
+        '''
+        expect = ParentNode('body', [
+            ParentNode('h2', [
+                LeafNode(None, 'Shopping list'),
+            ]),
+            ParentNode('ol', [
+                ParentNode('li', [LeafNode(None, 'Eggs')]),
+                ParentNode('li', [LeafNode(None, 'Cabbages')]),
+                ParentNode('li', [LeafNode('b', 'Milk')]),
+                ParentNode('li', [LeafNode(None, 'Whisky')]),
+            ]),
+            ParentNode('h2', [
+                LeafNode(None, 'Shopping sites'),
+            ]),
+            ParentNode('ol', [
+                ParentNode('li', [LeafNode(None, 'Prism')]),
+                ParentNode('li', [LeafNode(None, 'K-supermarket')]),
+            ]),
+        ])
+        self.assertEqual(repr(markdown_to_htmlnode(markdown)), repr(expect))
+
+    def test_markdown_to_htmlnode_code_blocks(self):
+        markdown = '''
+```bash
+[[ $INSANE ]] && true || false
+```
+
+```py
+def count_to_100():
+    for i in range(100):
+        print(i)
+```
+
+```
+Just some line that is space-preserved
+    With things like steps
+        Or more
+            More indented
+        Back out
+    Back, again
+Make it a curve
+```
+        '''
+        expect = ParentNode('body', [
+            ParentNode('pre', [
+                ParentNode('code', [
+                    LeafNode(None, '[[ $INSANE ]] && true || false'),
+                ]),
+            ]),
+            ParentNode('pre', [
+                ParentNode('code', [
+                    LeafNode(None, '''def count_to_100():
+for i in range(100):
+print(i)'''),
+                ]),
+            ]),
+            ParentNode('pre', [
+                ParentNode('code', [
+                    LeafNode(None, '''Just some line that is space-preserved
+With things like steps
+Or more
+More indented
+Back out
+Back, again
+Make it a curve'''),
+                ]),
+            ]),
+        ])
+        self.assertEqual(repr(markdown_to_htmlnode(markdown)), repr(expect))
+    def test_markdown_to_htmlnode_blockquotes(self):
+        markdown = '''
+> A wall of quote
+> Written in English
+> Supposed to be in these lines, really
+
+> Single line quote
+
+>> More than a level
+> Should be normal
+'''
+        expect = ParentNode('body', [
+            ParentNode('blockquote', [
+                ParentNode('p', [
+                    LeafNode(None, '''A wall of quote
+Written in English
+Supposed to be in these lines, really'''),
+                ]),
+            ]),
+            ParentNode('blockquote', [
+                ParentNode('p', [
+                    LeafNode(None, 'Single line quote')
+                ]),
+            ]),
+            ParentNode('blockquote', [
+                ParentNode('p', [
+                    LeafNode(None, '''More than a level
+Should be normal''')
+                ]),
+            ]),
+        ])
+        self.assertEqual(repr(markdown_to_htmlnode(markdown)), repr(expect))
+
+    def test_markdown_to_htmlnode_invalid_blocks(self):
+        markdown = '''
+# No longer a heading
+Because there's a line under it.
+
+- No longer a list
+en passant
+- Because a line ran over
+
+        '''
+        expect = ParentNode('body', [
+            ParentNode('p', [
+                LeafNode(None, """# No longer a heading
+Because there's a line under it."""),
+            ]),
+            ParentNode('p', [
+                LeafNode(None, """- No longer a list
+en passant
+- Because a line ran over"""),
+            ]),
+        ])
+        self.assertEqual(repr(markdown_to_htmlnode(markdown)), repr(expect))
+
+    def test_markdown_to_htmlnode_headings(self):
+        markdown = '''
+#                        Should still be h1
+
+## level 2
+
+###### level 6
+        '''
+        expect = ParentNode('body', [
+            ParentNode('h1', [LeafNode(None, 'Should still be h1')]),
+            ParentNode('h2', [LeafNode(None, 'level 2')]),
+            ParentNode('h6', [LeafNode(None, 'level 6')]),
+        ])
+        self.assertEqual(repr(markdown_to_htmlnode(markdown)), repr(expect))
+
+    def test_markdown_to_htmlnode_unordered_list(self):
+        markdown = '''
+* Single list item
+
+- Single list item
+
+* List item 1
+* List item 2
+* List item 3
+
+- List item 1
+- List item 2
+- List item 3
+        '''
+        expect = ParentNode('body', [
+            ParentNode('ul', [
+                ParentNode('li', [LeafNode(None, 'Single list item')]),
+            ]),
+            ParentNode('ul', [
+                ParentNode('li', [LeafNode(None, 'Single list item')]),
+            ]),
+            ParentNode('ul', [
+                ParentNode('li', [LeafNode(None, 'List item 1')]),
+                ParentNode('li', [LeafNode(None, 'List item 2')]),
+                ParentNode('li', [LeafNode(None, 'List item 3')]),
+            ]),
+            ParentNode('ul', [
+                ParentNode('li', [LeafNode(None, 'List item 1')]),
+                ParentNode('li', [LeafNode(None, 'List item 2')]),
+                ParentNode('li', [LeafNode(None, 'List item 3')]),
+            ]),
+        ])
+        self.assertEqual(repr(markdown_to_htmlnode(markdown)), repr(expect))
