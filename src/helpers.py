@@ -93,3 +93,10 @@ def block_to_block_type(block):
         if orders == list(range(1, int(orders[-1])+1)):
             return 'ordered_list'
     return 'paragraph'
+
+def extract_title(markdown):
+    lines = markdown.split('\n')
+    for line in lines:
+        if re.match(r'#{1} ', line):
+            return line.lstrip('# ')
+    raise Exception('No title found')

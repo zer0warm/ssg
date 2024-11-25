@@ -6,7 +6,8 @@ from helpers import (
     split_nodes_delimiter,
     extract_markdown_links, extract_markdown_images,
     split_nodes_image, split_nodes_link,
-    block_to_block_type
+    block_to_block_type,
+    extract_title
 )
 
 class TestSplitNodesDelimiter(unittest.TestCase):
@@ -458,6 +459,57 @@ print('Hello, world')
         ]
         for block in blocks:
             self.assertEqual(block_to_block_type(block), 'ordered_list')
+# }}}
+class TestExtractTitle(unittest.TestCase):
+    def test_extract_title_single(self):# {{{
+        markdown = '# Hello world'
+        expect = 'Hello world'
+        self.assertEqual(extract_title(markdown), expect)
+# }}}
+    def test_extract_title_document(self):# {{{
+        markdown = '''# This is a heading
+
+This is a paragraph of text. It has some **bold** and *italic* words inside of it.
+A single newline should not break it.
+
+* This is the first list item in a list block
+* This is a list item
+* This is another list item
+'''
+        expect = 'This is a heading'
+        self.assertEqual(extract_title(markdown), expect)
+# }}}
+    def test_extract_title_leading_spaces(self):# {{{
+        markdown = '''#            Title
+Lorem ispum. Honestly I'm too lazy to look the full string.
+
+Signature.
+        '''
+        expect = 'Title'
+        self.assertEqual(extract_title(markdown), expect)
+# }}}
+    def test_extract_title_more_than_one(self):# {{{
+        markdown = '''Some heading line
+        another
+# This is the real title
+        and then
+# BREAK NEWS: THIS WORKS
+
+# ANOTHER NEWS'''
+        expect = 'This is the real title'
+        self.assertEqual(extract_title(markdown), expect)
+# }}}
+    def test_extract_title_no_title(self):# {{{
+        markdown = '''
+## About
+
+Should be a short text describing what the product is about.
+
+## Contacts
+
+hello@example.com
+-Infinity Street.'''
+        self.assertRaises(Exception, extract_title, markdown)
 # }}}
 if __name__ == '__main__':
     unittest.main()
