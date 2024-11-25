@@ -44,6 +44,20 @@ def generate_page(template_path, src, dst):
 
     print('Done.')
 
+def generate_pages_recursive(template_path, content_dir, dst_dir):
+    for file in os.listdir(content_dir):
+        entry = os.path.join(content_dir, file)
+        if os.path.isdir(entry):
+            new_dst = os.path.join(dst_dir, file)
+            print(f'--> creating {new_dst}...')
+            os.mkdir(new_dst)
+
+            from_dir = os.path.join(content_dir, file)
+            generate_pages_recursive(template_path, from_dir, new_dst)
+        if os.path.isfile(entry):
+            new_html_name = file.replace('.md', '.html')
+            generate_page(template_path, entry, os.path.join(dst_dir, new_html_name))
+
 def main():
     src = 'static'
     dst = 'public'
@@ -59,7 +73,7 @@ def main():
         os.mkdir(dst)
 
     copy_files(src, dst)
-    generate_page('template.html', 'content/index.md', 'public/index.html')
+    generate_pages_recursive('template.html', 'content', 'public')
 
 if __name__ == '__main__':
     main()
