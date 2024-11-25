@@ -10,7 +10,7 @@ from helpers import (
 )
 
 class TestSplitNodesDelimiter(unittest.TestCase):
-    def test_split_bold(self):
+    def test_split_bold(self):# {{{
         nodes = [TextNode('Bold of **text** to assume success', TextType.NORMAL)]
         splitted = split_nodes_delimiter(nodes, '**', TextType.BOLD)
         expect = [
@@ -19,8 +19,8 @@ class TestSplitNodesDelimiter(unittest.TestCase):
             TextNode(' to assume success', TextType.NORMAL)
         ]
         self.assertEqual(splitted, expect)
-
-    def test_split_bold_start(self):
+# }}}
+    def test_split_bold_start(self):# {{{
         nodes = [TextNode('**Bold** of text to assume success', TextType.NORMAL)]
         splitted = split_nodes_delimiter(nodes, '**', TextType.BOLD)
         expect = [
@@ -28,8 +28,8 @@ class TestSplitNodesDelimiter(unittest.TestCase):
             TextNode(' of text to assume success', TextType.NORMAL)
         ]
         self.assertEqual(splitted, expect)
-
-    def test_split_bold_end(self):
+# }}}
+    def test_split_bold_end(self):# {{{
         nodes = [TextNode('Bold of text to assume **success**', TextType.NORMAL)]
         splitted = split_nodes_delimiter(nodes, '**', TextType.BOLD)
         expect = [
@@ -37,8 +37,8 @@ class TestSplitNodesDelimiter(unittest.TestCase):
             TextNode('success', TextType.BOLD)
         ]
         self.assertEqual(splitted, expect)
-
-    def test_split_bold_multi(self):
+# }}}
+    def test_split_bold_multi(self):# {{{
         nodes = [
             TextNode('**Bold** of `text` to *assume success*',
                      TextType.NORMAL),
@@ -53,13 +53,13 @@ class TestSplitNodesDelimiter(unittest.TestCase):
             TextNode('Bold text is <strong>', TextType.BOLD)
         ]
         self.assertEqual(splitted, expect)
-
-    def test_split_bold_uneven(self):
+# }}}
+    def test_split_bold_uneven(self):# {{{
         nodes = [TextNode('Bold of **text to assume success', TextType.NORMAL)]
         self.assertRaisesRegex(Exception, 'invalid',
                                split_nodes_delimiter, nodes, '**', TextType.BOLD)
-
-    def test_split_italic_multi(self):
+# }}}
+    def test_split_italic_multi(self):# {{{
         nodes = [
             TextNode('Have *a Pisa* in `Italic`? You meant `Bold`?',
                      TextType.NORMAL),
@@ -77,15 +77,15 @@ class TestSplitNodesDelimiter(unittest.TestCase):
             TextNode('Italic', TextType.CODE)
         ]
         self.assertEqual(splitted, expect)
-
+# }}}
 class TestExtractMarkdownLink(unittest.TestCase):
-    def test_extract_links_single(self):
+    def test_extract_links_single(self):# {{{
         text = 'Visit [GitHub](https://github.com).'
         links = extract_markdown_links(text)
         expect = [("GitHub", "https://github.com")]
         self.assertEqual(links, expect)
-
-    def test_extract_links_multiple(self):
+# }}}
+    def test_extract_links_multiple(self):# {{{
         text = '''Platforms hosting Git repositories including
         [GitHub](https://github.com) and [GitLab](https://gitlab.com)'''
         links = extract_markdown_links(text)
@@ -94,65 +94,65 @@ class TestExtractMarkdownLink(unittest.TestCase):
             ("GitLab", "https://gitlab.com")
         ]
         self.assertEqual(links, expect)
-
-    def test_extract_links_in_junction(self):
+# }}}
+    def test_extract_links_in_junction(self):# {{{
         text = '''This is a [line] with a lot of (fix: many) <brackets>. The
         point is to [test](https://linux.die.net/man/1/test) whether the system
         can <<extract>> properly.'''
         expect = [("test", "https://linux.die.net/man/1/test")]
         links = extract_markdown_links(text)
         self.assertEqual(links, expect)
-
-    def test_extract_links_among_images(self):
+# }}}
+    def test_extract_links_among_images(self):# {{{
         text = '''[A link](https://example.com) vs. ![An image](https://image.example.com)'''
         expect = [("A link", "https://example.com")]
         links = extract_markdown_links(text)
         self.assertEqual(links, expect)
-
-    def test_extract_links_empty(self):
+# }}}
+    def test_extract_links_empty(self):# {{{
         text = 'This is a valid markdown. []() is an empty link'
         expect = [("", "")]
         links = extract_markdown_links(text)
         self.assertEqual(links, expect)
-
+# }}}
 class TestExtractMarkdownImage(unittest.TestCase):
-    def test_extract_image(self):
+    def test_extract_image(self):# {{{
         text = 'Check out: ![an example image](https://example.com/img)'
         imgs = extract_markdown_images(text)
         expect = [("an example image", "https://example.com/img")]
         self.assertEqual(imgs, expect)
-
-    def test_extract_image_with_links(self):
+# }}}
+    def test_extract_image_with_links(self):# {{{
         text = '''[A link](https://example.com) vs. ![An image](https://image.example.com)'''
         expect = [("An image", "https://image.example.com")]
         imgs = extract_markdown_images(text)
         self.assertEqual(imgs, expect)
-
+# }}}
 class TestSplitNodesImage(unittest.TestCase):
-    def test_split_image_end(self):
+    def test_split_image_end(self):# {{{
         nodes = [TextNode('An image ![example img](https://image.example.com)', TextType.NORMAL)]
         expect = [
             TextNode('An image ', TextType.NORMAL),
             TextNode('example img', TextType.IMAGE, 'https://image.example.com')
         ]
         self.assertEqual(split_nodes_image(nodes), expect)
-
-    def test_split_image_start(self):
+# }}}
+    def test_split_image_start(self):# {{{
         nodes = [TextNode('![example img](https://image.example.com) as an example', TextType.NORMAL)]
         expect = [
             TextNode('example img', TextType.IMAGE, 'https://image.example.com'),
             TextNode(' as an example', TextType.NORMAL)
         ]
         self.assertEqual(split_nodes_image(nodes), expect)
-
-    def test_split_image_standalone(self):
+# }}}
+    def test_split_image_standalone(self):# {{{
         nodes = [TextNode('![example img](https://image.example.com)', TextType.NORMAL)]
         expect = [
             TextNode('example img', TextType.IMAGE, 'https://image.example.com')
         ]
         self.assertEqual(split_nodes_image(nodes), expect)
-
-    def test_split_image_no_image(self):
+# }}}
+    def test_split_image_no_image(self):# {{{
         nodes = [
             TextNode('A line of normal text', TextType.NORMAL),
             TextNode('A line of **bold** text', TextType.NORMAL),
@@ -161,8 +161,8 @@ class TestSplitNodesImage(unittest.TestCase):
         ]
         expect = nodes.copy()
         self.assertEqual(split_nodes_image(nodes), expect)
-
-    def test_split_image_multiple(self):
+# }}}
+    def test_split_image_multiple(self):# {{{
         nodes = [
             TextNode('Here is an image of a cat', TextType.NORMAL),
             TextNode('![orange cat](https://orange-cat.example.com)', TextType.NORMAL),
@@ -175,8 +175,8 @@ class TestSplitNodesImage(unittest.TestCase):
             TextNode('black cat', TextType.IMAGE, 'https://bc.example.com')
         ]
         self.assertEqual(split_nodes_image(nodes), expect)
-
-    def test_split_image_among_links(self):
+# }}}
+    def test_split_image_among_links(self):# {{{
         nodes = [
             TextNode('![image one](https://i1.example.com) and' +
                      ' [GitHub](https://github.com).' +
@@ -196,16 +196,16 @@ class TestSplitNodesImage(unittest.TestCase):
         ]
         self.maxDiff = None
         self.assertEqual(split_nodes_image(nodes), expect)
-
+# }}}
 class TestSplitNodesLink(unittest.TestCase):
-    def test_split_link_single(self):
+    def test_split_link_single(self):# {{{
         nodes = [TextNode('[link name](http://link.url)', TextType.NORMAL)]
         expect = [
             TextNode('link name', TextType.LINK, 'http://link.url')
         ]
         self.assertEqual(split_nodes_link(nodes), expect)
-
-    def test_split_link_multiple_text_single(self):
+# }}}
+    def test_split_link_multiple_text_single(self):# {{{
         nodes = [
             TextNode('[link 1](https://1.link.url) and ' +
                      '[link 2](https://2.link.url). ' +
@@ -219,8 +219,8 @@ class TestSplitNodesLink(unittest.TestCase):
             TextNode('link 3', TextType.LINK, 'https://3.link.url'),
         ]
         self.assertEqual(split_nodes_link(nodes), expect)
-
-    def test_split_link_multiple_text_multiple(self):
+# }}}
+    def test_split_link_multiple_text_multiple(self):# {{{
         nodes = [
             TextNode('First, a single line.', TextType.NORMAL),
             TextNode('Then a link [example](https://example.com)', TextType.NORMAL),
@@ -241,8 +241,8 @@ class TestSplitNodesLink(unittest.TestCase):
             TextNode('Finally, a dot.', TextType.NORMAL)
         ]
         self.assertEqual(split_nodes_link(nodes), expect)
-
-    def test_split_link_empty(self):
+# }}}
+    def test_split_link_empty(self):# {{{
         nodes = [
             TextNode('[]()', TextType.NORMAL),
             TextNode('[without link]()', TextType.NORMAL),
@@ -254,8 +254,8 @@ class TestSplitNodesLink(unittest.TestCase):
             TextNode('', TextType.LINK, 'without name')
         ]
         self.assertEqual(split_nodes_link(nodes), expect)
-
-    def test_split_link_no_link(self):
+# }}}
+    def test_split_link_no_link(self):# {{{
         nodes = [
             TextNode('A line of normal text', TextType.NORMAL),
             TextNode('A line of **bold** text', TextType.NORMAL),
@@ -264,8 +264,8 @@ class TestSplitNodesLink(unittest.TestCase):
         ]
         expect = nodes.copy()
         self.assertEqual(split_nodes_link(nodes), expect)
-
-    def test_split_link_among_images(self):
+# }}}
+    def test_split_link_among_images(self):# {{{
         nodes = [
             TextNode('[Hello](mailto:hello@boot.dev), you\'ve stumbled' +
                      ' upon ![pokemon image](http://po.ke.mon)' +
@@ -283,13 +283,13 @@ class TestSplitNodesLink(unittest.TestCase):
             TextNode('repo', TextType.LINK, 'github.com/zer0warm/jibberish')
         ]
         self.assertEqual(split_nodes_link(nodes), expect)
-
+# }}}
 class TestBlockToBlockType(unittest.TestCase):
-    def test_block_type_p(self):
+    def test_block_type_p(self):# {{{
         block = 'This is a paragraph. Watch out for **bold** or *italic* text. Inline `code` too.'
         self.assertEqual(block_to_block_type(block), 'paragraph')
-
-    def test_block_type_p_invalid_heading(self):
+# }}}
+    def test_block_type_p_invalid_heading(self):# {{{
         blocks = [
             '#This is not a heading',
             '################ too many octothorpes',
@@ -302,8 +302,8 @@ But followed by a line.'''
         ]
         for block in blocks:
             self.assertEqual(block_to_block_type(block), 'paragraph')
-
-    def test_block_type_p_invalid_code(self):
+# }}}
+    def test_block_type_p_invalid_code(self):# {{{
         blocks = [
             """```Code in here
 ThenCode
@@ -323,8 +323,8 @@ of a code block
         ]
         for block in blocks:
             self.assertEqual(block_to_block_type(block), 'paragraph')
-
-    def test_block_type_p_invalid_quote(self):
+# }}}
+    def test_block_type_p_invalid_quote(self):# {{{
         blocks = [
             '''>In a quote
 >Like this
@@ -339,8 +339,8 @@ But suddenly not quote''',
         ]
         for block in blocks:
             self.assertEqual(block_to_block_type(block), 'paragraph')
-
-    def test_block_type_p_invalid_unordered_list(self):
+# }}}
+    def test_block_type_p_invalid_unordered_list(self):# {{{
         blocks = [
             '-list item without space',
             '*list item without space',
@@ -376,8 +376,8 @@ en passant"""
         ]
         for block in blocks:
             self.assertEqual(block_to_block_type(block), 'paragraph')
-
-    def test_block_type_p_invalid_ordered_list(self):
+# }}}
+    def test_block_type_p_invalid_ordered_list(self):# {{{
         blocks = [
             '2. Why start with 1?',
             '0. Again, are we not computer scientists?',
@@ -396,8 +396,8 @@ en passant""",
         ]
         for block in blocks:
             self.assertEqual(block_to_block_type(block), 'paragraph')
-
-    def test_block_type_heading(self):
+# }}}
+    def test_block_type_heading(self):# {{{
         blocks = [
             '# This is a heading',
             '##     This is h2',
@@ -408,8 +408,8 @@ en passant""",
         ]
         for block in blocks:
             self.assertEqual(block_to_block_type(block), 'heading')
-
-    def test_block_type_code(self):
+# }}}
+    def test_block_type_code(self):# {{{
         blocks = [
             """```
 This is just a block of code font.
@@ -422,8 +422,8 @@ print('Hello, world')
         ]
         for block in blocks:
             self.assertEqual(block_to_block_type(block), 'code')
-
-    def test_block_type_quote(self):
+# }}}
+    def test_block_type_quote(self):# {{{
         blocks = [
             '> Single line quote',
             '>Single line quote without space',
@@ -435,8 +435,8 @@ print('Hello, world')
         ]
         for block in blocks:
             self.assertEqual(block_to_block_type(block), 'quote')
-
-    def test_block_type_unordered_list(self):
+# }}}
+    def test_block_type_unordered_list(self):# {{{
         blocks = [
             '* List item asterisk',
             '- List item dash',
@@ -448,8 +448,8 @@ print('Hello, world')
         ]
         for block in blocks:
             self.assertEqual(block_to_block_type(block), 'unordered_list')
-
-    def test_block_type_ordered_list(self):
+# }}}
+    def test_block_type_ordered_list(self):# {{{
         blocks = [
             '1. List item single',
             '''1. List item 1
@@ -458,6 +458,6 @@ print('Hello, world')
         ]
         for block in blocks:
             self.assertEqual(block_to_block_type(block), 'ordered_list')
-
+# }}}
 if __name__ == '__main__':
     unittest.main()

@@ -11,39 +11,39 @@ from transformers import (
 )
 
 class TestTextNodeToHTMLNode(unittest.TestCase):
-    def test_convert_normal_text(self):
+    def test_convert_normal_text(self):# {{{
         tn = TextNode('A wild text displayed', TextType.NORMAL)
         Ln = textnode_to_htmlnode(tn)
         self.assertIs(Ln.tag, None)
         self.assertIs(Ln.props, None)
         self.assertEqual(Ln.value, 'A wild text displayed')
         self.assertEqual(Ln.to_html(), 'A wild text displayed')
-
-    def test_convert_bold_text(self):
+# }}}
+    def test_convert_bold_text(self):# {{{
         tn = TextNode('Bold of text to assume success', TextType.BOLD)
         Ln = textnode_to_htmlnode(tn)
         self.assertIs(Ln.props, None)
         self.assertEqual(Ln.tag, 'b')
         self.assertEqual(Ln.value, 'Bold of text to assume success')
         self.assertEqual(Ln.to_html(), '<b>Bold of text to assume success</b>')
-
-    def test_convert_italic_text(self):
+# }}}
+    def test_convert_italic_text(self):# {{{
         tn = TextNode('Have some Pisa in Italic', TextType.ITALIC)
         Ln = textnode_to_htmlnode(tn)
         self.assertIs(Ln.props, None)
         self.assertEqual(Ln.tag, 'i')
         self.assertEqual(Ln.value, 'Have some Pisa in Italic')
         self.assertEqual(Ln.to_html(), '<i>Have some Pisa in Italic</i>')
-
-    def test_convert_code_text(self):
+# }}}
+    def test_convert_code_text(self):# {{{
         tn = TextNode('print("Hello, world!")', TextType.CODE)
         Ln = textnode_to_htmlnode(tn)
         self.assertIs(Ln.props, None)
         self.assertEqual(Ln.tag, 'code')
         self.assertEqual(Ln.value, 'print("Hello, world!")')
         self.assertEqual(Ln.to_html(), '<code>print("Hello, world!")</code>')
-
-    def test_convert_link_text(self):
+# }}}
+    def test_convert_link_text(self):# {{{
         tn = TextNode('Link start!', TextType.LINK,
                       'https://www.swordart-online.net/')
         Ln = textnode_to_htmlnode(tn)
@@ -53,8 +53,8 @@ class TestTextNodeToHTMLNode(unittest.TestCase):
         self.assertEqual(Ln.value, 'Link start!')
         html = '<a href="https://www.swordart-online.net/">Link start!</a>'
         self.assertEqual(Ln.to_html(), html)
-
-    def test_convert_image_text_example(self):
+# }}}
+    def test_convert_image_text_example(self):# {{{
         tn = TextNode('An example image', TextType.IMAGE,
                       'https://example.com')
         Ln = textnode_to_htmlnode(tn)
@@ -65,15 +65,15 @@ class TestTextNodeToHTMLNode(unittest.TestCase):
         self.assertEqual(Ln.value, None)
         html = '<img src="https://example.com" alt="An example image">'
         self.assertEqual(Ln.to_html(), html)
-
+# }}}
     @unittest.skip("currently unreachable")
-    def test_convert_malfunc_text(self):
+    def test_convert_malfunc_text(self):# {{{
         tn = TextNode('Invalid node', 'invalid', 'url://point.to.nowhere')
         self.assertRaisesRegex(ValueError, 'invalid text type "invalid"',
                                textnode_to_htmlnode, tn)
-
+# }}}
 class TestTextToTextNodes(unittest.TestCase):
-    def test_text_to_nodes_only_non_links(self):
+    def test_text_to_nodes_only_non_links(self):# {{{
         text = 'Run `bash` and *tell* me **what you see**'
         expect = [
             TextNode('Run ', TextType.NORMAL),
@@ -84,8 +84,8 @@ class TestTextToTextNodes(unittest.TestCase):
             TextNode('what you see', TextType.BOLD)
         ]
         self.assertEqual(text_to_textnodes(text), expect)
-
-    def test_text_to_nodes_only_links(self):
+# }}}
+    def test_text_to_nodes_only_links(self):# {{{
         text = ('Come see this ![picture](https://image.example.com)' +
                 ' and remember to follow [me](https://me.bsky.app)')
         expect = [
@@ -95,8 +95,8 @@ class TestTextToTextNodes(unittest.TestCase):
             TextNode('me', TextType.LINK, 'https://me.bsky.app')
         ]
         self.assertEqual(text_to_textnodes(text), expect)
-
-    def test_text_to_nodes_mix(self):
+# }}}
+    def test_text_to_nodes_mix(self):# {{{
         text = '''A [link](https://example.com) shows an image: ![alt text](https://image.example.com). Run [this code](https://notepad.app/sh) with `bash` or `zsh`: `echo "Hello World" > ~/.hello`'''
         expect = [
             TextNode('A ', TextType.NORMAL),
@@ -113,8 +113,8 @@ class TestTextToTextNodes(unittest.TestCase):
             TextNode('echo "Hello World" > ~/.hello', TextType.CODE)
         ]
         self.assertEqual(text_to_textnodes(text), expect)
-
-    def test_text_to_nodes_random_1(self):
+# }}}
+    def test_text_to_nodes_random_1(self):# {{{
         text = '**Option 1**: [The webi installer](https://webinstall.dev/golang/) is the simplest way for most people. Just run this in your terminal:'
         expect = [
             TextNode('Option 1', TextType.BOLD),
@@ -123,14 +123,14 @@ class TestTextToTextNodes(unittest.TestCase):
             TextNode(' is the simplest way for most people. Just run this in your terminal:', TextType.NORMAL)
         ]
         self.assertEqual(text_to_textnodes(text), expect)
-
+# }}}
 class TestMarkdownToBlocks(unittest.TestCase):
-    def test_markdown_to_block_empty(self):
+    def test_markdown_to_block_empty(self):# {{{
         markdown = ''
         expect = []
         self.assertEqual(markdown_to_blocks(markdown), expect)
-
-    def test_markdown_to_block_simple(self):
+# }}}
+    def test_markdown_to_block_simple(self):# {{{
         markdown = '''# This is a heading
 
 This is a paragraph of text. It has some **bold** and *italic* words inside of it.
@@ -148,8 +148,8 @@ This is a paragraph of text. It has some **bold** and *italic* words inside of i
         ]
         #print(markdown_to_blocks(markdown))
         self.assertEqual(markdown_to_blocks(markdown), expect)
-
-    def test_markdown_to_block_multiple_blank_lines(self):
+# }}}
+    def test_markdown_to_block_multiple_blank_lines(self):# {{{
         markdown = '''
 
 # This is a heading
@@ -174,8 +174,8 @@ This is a paragraph of text. It has some **bold** and *italic* words inside of i
 * This is another list item'''
         ]
         self.assertEqual(markdown_to_blocks(markdown), expect)
-
-    def test_markdown_to_block_leading_spaces(self):
+# }}}
+    def test_markdown_to_block_leading_spaces(self):# {{{
         markdown = '''# This is a heading
 
         This is a paragraph of text. It has some **bold** and *italic* words inside of it.
@@ -192,8 +192,8 @@ This is a paragraph of text. It has some **bold** and *italic* words inside of i
 * This is another list item'''
         ]
         self.assertEqual(markdown_to_blocks(markdown), expect)
-
-    def test_markdown_to_block_trailing_spaces(self):
+# }}}
+    def test_markdown_to_block_trailing_spaces(self):# {{{
         markdown = '''# This is a heading
          
 This is a paragraph of text. It has some **bold** and *italic* words inside of it.       
@@ -210,9 +210,9 @@ This is a paragraph of text. It has some **bold** and *italic* words inside of i
 * This is another list item'''
         ]
         self.assertEqual(markdown_to_blocks(markdown), expect)
-
+# }}}
 class TestMarkdownToHTMLNode(unittest.TestCase):
-    def test_markdown_to_htmlnode_simple(self):
+    def test_markdown_to_htmlnode_simple(self):# {{{
         markdown = '''# This is a heading
 
 This is a paragraph of text. It has some **bold** and *italic* words inside of it.
@@ -241,8 +241,8 @@ A single newline should not break it."""),
             ]),
         ])
         self.assertEqual(repr(markdown_to_htmlnode(markdown)), repr(expect))
-
-    def test_markdown_to_htmlnode_ordered_list(self):
+# }}}
+    def test_markdown_to_htmlnode_ordered_list(self):# {{{
         markdown = '''## Shopping list
 
 1. Eggs
@@ -274,8 +274,8 @@ A single newline should not break it."""),
             ]),
         ])
         self.assertEqual(repr(markdown_to_htmlnode(markdown)), repr(expect))
-
-    def test_markdown_to_htmlnode_code_blocks(self):
+# }}}
+    def test_markdown_to_htmlnode_code_blocks(self):# {{{
         markdown = '''
 ```bash
 [[ $INSANE ]] && true || false
@@ -323,7 +323,8 @@ Make it a curve'''),
             ]),
         ])
         self.assertEqual(repr(markdown_to_htmlnode(markdown)), repr(expect))
-    def test_markdown_to_htmlnode_blockquotes(self):
+# }}}
+    def test_markdown_to_htmlnode_blockquotes(self):# {{{
         markdown = '''
 > A wall of quote
 > Written in English
@@ -355,8 +356,8 @@ Should be normal''')
             ]),
         ])
         self.assertEqual(repr(markdown_to_htmlnode(markdown)), repr(expect))
-
-    def test_markdown_to_htmlnode_invalid_blocks(self):
+# }}}
+    def test_markdown_to_htmlnode_invalid_blocks(self):# {{{
         markdown = '''
 # No longer a heading
 Because there's a line under it.
@@ -378,8 +379,8 @@ en passant
             ]),
         ])
         self.assertEqual(repr(markdown_to_htmlnode(markdown)), repr(expect))
-
-    def test_markdown_to_htmlnode_headings(self):
+# }}}
+    def test_markdown_to_htmlnode_headings(self):# {{{
         markdown = '''
 #                        Should still be h1
 
@@ -393,8 +394,8 @@ en passant
             ParentNode('h6', [LeafNode(None, 'level 6')]),
         ])
         self.assertEqual(repr(markdown_to_htmlnode(markdown)), repr(expect))
-
-    def test_markdown_to_htmlnode_unordered_list(self):
+# }}}
+    def test_markdown_to_htmlnode_unordered_list(self):# {{{
         markdown = '''
 * Single list item
 
@@ -426,4 +427,4 @@ en passant
                 ParentNode('li', [LeafNode(None, 'List item 3')]),
             ]),
         ])
-        self.assertEqual(repr(markdown_to_htmlnode(markdown)), repr(expect))
+        self.assertEqual(repr(markdown_to_htmlnode(markdown)), repr(expect))# }}}
