@@ -98,9 +98,7 @@ def block_to_heading(block):
 
 def block_to_quote(block):
     block = '\n'.join([line.lstrip('> ') for line in block.split('\n')])
-    return ParentNode('blockquote', [
-        ParentNode('p', text_to_children(block))
-    ])
+    return ParentNode('blockquote', text_to_children(block))
 
 def block_to_list_item(block):
     # slice the list item marker away

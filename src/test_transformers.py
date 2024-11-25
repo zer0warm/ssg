@@ -337,22 +337,16 @@ Make it a curve'''),
 '''
         expect = ParentNode('div', [
             ParentNode('blockquote', [
-                ParentNode('p', [
                     LeafNode(None, '''A wall of quote
 Written in English
 Supposed to be in these lines, really'''),
-                ]),
             ]),
             ParentNode('blockquote', [
-                ParentNode('p', [
                     LeafNode(None, 'Single line quote')
-                ]),
             ]),
             ParentNode('blockquote', [
-                ParentNode('p', [
                     LeafNode(None, '''More than a level
 Should be normal''')
-                ]),
             ]),
         ])
         self.assertEqual(repr(markdown_to_htmlnode(markdown)), repr(expect))
