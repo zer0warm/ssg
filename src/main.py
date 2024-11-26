@@ -58,6 +58,20 @@ def generate_pages_recursive(template_path, content_dir, dst_dir):
             new_html_name = file.replace('.md', '.html')
             generate_page(template_path, entry, os.path.join(dst_dir, new_html_name))
 
+def delete_files_recursive(directory):
+    print(f'Deleting files in {directory}...')
+    for file in os.listdir(directory):
+        entry = os.path.join(directory, file)
+        print(f'Processing {entry}...')
+        if os.path.isdir(entry):
+            delete_files_recursive(entry)
+            print(f'Deleting {entry}...')
+            os.rmdir(entry)
+        else:
+            print(f'Deleting {entry}...')
+            os.remove(entry)
+    print('Done.')
+
 def main():
     src = 'static'
     dst = 'public'
@@ -67,7 +81,7 @@ def main():
 
     if os.path.isdir(dst):
         print(f'{dst} exist, deleting...')
-        shutil.rmtree(dst)
+        delete_files_recursive(dst)
     if not os.path.isdir(dst):
         print(f'{dst} not exist, creating...')
         os.mkdir(dst)
